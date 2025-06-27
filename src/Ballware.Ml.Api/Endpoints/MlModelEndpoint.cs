@@ -32,9 +32,10 @@ public static class MlModelEndpoint
             .WithTags(apiTag)
             .WithSummary("Consume model by id");
         
-        app.MapGet(basePath + "/train", HandleTrainAsync)
+        app.MapPost(basePath + "/train", HandleTrainAsync)
             .RequireAuthorization(authorizationScope)
-            .Produces<object>()
+            .DisableAntiforgery()
+            .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
             .WithName(apiOperationPrefix + "Train")
             .WithGroupName(apiGroup)
@@ -122,6 +123,7 @@ public static class MlModelEndpoint
         return Results.Accepted();
     }
     
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1172:Unused method parameters should be removed", Justification = "Parameter required by API contract for future extensibility")]
     private static async Task<IResult> HandleConsumeByIdBehalfOfUserAsync(IModelExecutor executor, Guid tenantId, Guid userId, Guid modelId, BodyValueBag query)
     {
         var prediction = await executor.PredictAsync(tenantId, modelId, query.Value);
@@ -129,6 +131,7 @@ public static class MlModelEndpoint
         return Results.Ok(prediction);
     }
     
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1172:Unused method parameters should be removed", Justification = "Parameter required by API contract for future extensibility")]
     private static async Task<IResult> HandleConsumeByIdentifierBehalfOfUserAsync(IModelExecutor executor, Guid tenantId, Guid userId, string identifier, BodyValueBag query)
     {
         var prediction = await executor.PredictAsync(tenantId, identifier, query.Value);

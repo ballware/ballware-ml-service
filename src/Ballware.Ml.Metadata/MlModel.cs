@@ -11,16 +11,16 @@ public enum MlModelTrainingStates
     Outdated = 1,
 
     [EnumMember(Value = @"Queued")]
-    Queued = 2,
+    Queued = 5,
 
     [EnumMember(Value = @"InProgress")]
-    InProgress = 3,
+    InProgress = 6,
 
     [EnumMember(Value = @"UpToDate")]
-    UpToDate = 4,
+    UpToDate = 10,
 
     [EnumMember(Value = @"Error")]
-    Error = 5,
+    Error = 99,
 }
 
 public class UpdateMlModelTrainingStatePayload
@@ -51,7 +51,7 @@ public class ModelOptions
     public string TrainingLogFileName { get; set; }
 }
 
-public enum FieldTypes : int
+public enum FieldTypes
 {
     Bool = 0,
     Int = 1,
