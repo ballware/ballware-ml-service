@@ -32,6 +32,7 @@
       <ProjectReference Include="..\Ballware.Meta.Client\Ballware.Meta.Client.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Api\Ballware.Ml.Api.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Authorization\Ballware.Ml.Authorization.csproj" />
+      <ProjectReference Include="..\Ballware.Ml.Caching\Ballware.Ml.Caching.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Engine.AutoMl\Ballware.Ml.Engine.AutoMl.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Engine\Ballware.Ml.Engine.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Jobs\Ballware.Ml.Jobs.csproj" />

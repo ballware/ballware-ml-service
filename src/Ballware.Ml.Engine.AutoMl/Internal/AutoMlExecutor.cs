@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Text;
+using Ballware.Ml.Caching;
 using Ballware.Ml.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -16,13 +17,15 @@ public class AutoMlExecutor : IModelExecutor
     private IMetadataAdapter MetadataAdapter { get; }
     private ITenantDataAdapter TenantDataAdapter { get; }
     private IAutoMlFileStorageAdapter StorageAdapter { get; }
+    private ITenantAwareModelCache? Cache { get; }
     
-    public AutoMlExecutor(ILogger<AutoMlExecutor> logger, IMetadataAdapter metadataAdapter, ITenantDataAdapter tenantDataAdapter, IAutoMlFileStorageAdapter storageAdapter)
+    public AutoMlExecutor(ILogger<AutoMlExecutor> logger, IMetadataAdapter metadataAdapter, ITenantDataAdapter tenantDataAdapter, IAutoMlFileStorageAdapter storageAdapter, ITenantAwareModelCache? cache)
     {
         Logger = logger;
         MetadataAdapter = metadataAdapter;
         TenantDataAdapter = tenantDataAdapter;
         StorageAdapter = storageAdapter;
+        Cache = cache;
     }
     
     public async Task TrainAsync(Guid tenantId, Guid modelId, Guid userId)
@@ -58,7 +61,8 @@ public class AutoMlExecutor : IModelExecutor
         IList runtimeTrainingDataList = (IList)Activator.CreateInstance(runtimeTrainingDataListType);
         
         var objectConverter = typeof(JObject)
-            .GetMethods().Where(m => m.Name == "ToObject" && m.GetParameters().Length == 0).First()
+            .GetMethods()
+            .First(m => m.Name == "ToObject" && m.GetParameters().Length == 0)
             .MakeGenericMethod(inputType);
         
         var trainingData = (await TenantDataAdapter.MlModelTrainingdataByTenantAndIdAsync(tenantId, modelId)).ToList();
@@ -69,7 +73,8 @@ public class AutoMlExecutor : IModelExecutor
         }
         
         var dataView = typeof(DataOperationsCatalog)
-            .GetMethods().Where(m => m.Name == "LoadFromEnumerable" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType == typeof(DataViewSchema)).First()
+            .GetMethods()
+            .First(m => m.Name == "LoadFromEnumerable" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType == typeof(DataViewSchema))
             .MakeGenericMethod(inputType)
             .Invoke(mlContext.Data, new object[] { runtimeTrainingDataList, dataviewSchema }) as IDataView;
         
@@ -98,6 +103,8 @@ public class AutoMlExecutor : IModelExecutor
                         ? modelOptions.TrainingFileName
                         : "model.zip", "application/binary", stream);
             }
+            
+            Cache?.PurgeItem(tenantId, modelMetadata.Identifier);
             
             await MetadataAdapter.MlModelUpdateTrainingStateBehalfOfUserAsync(tenantId, userId, new UpdateMlModelTrainingStatePayload()
             {
@@ -142,8 +149,21 @@ public class AutoMlExecutor : IModelExecutor
     public async Task<object> PredictAsync(Guid tenantId, Guid modelId, IDictionary<string, object> query)
     {   
         var modelMetadata = await MetadataAdapter.MlModelMetadataByTenantAndIdAsync(tenantId, modelId);
+
+        if (modelMetadata == null)
+        {
+            throw new ArgumentException($"Model with ID {modelId} not found for tenant {tenantId}");
+        }
         
-        var prediction = await CreatePredictionEngine(tenantId, modelMetadata);
+        AutoMlPredictionContext? prediction = null;
+        
+        Cache?.TryGetItem(tenantId, modelMetadata.Identifier, out prediction);
+
+        if (prediction == null)
+        {
+            prediction = await CreatePredictionEngine(tenantId, modelMetadata);
+            Cache?.SetItem(tenantId, modelMetadata.Identifier, prediction);
+        }
         
         return Predict(prediction, query);
     }
@@ -152,7 +172,20 @@ public class AutoMlExecutor : IModelExecutor
     {
         var modelMetadata = await MetadataAdapter.MlModelMetadataByTenantAndIdentifierAsync(tenantId, identifier);
 
-        var prediction = await CreatePredictionEngine(tenantId, modelMetadata);
+        if (modelMetadata == null)
+        {
+            throw new ArgumentException($"Model with identifier {identifier} not found for tenant {tenantId}");
+        }
+        
+        AutoMlPredictionContext? prediction = null;
+        
+        Cache?.TryGetItem(tenantId, modelMetadata.Identifier, out prediction);
+
+        if (prediction == null)
+        {
+            prediction = await CreatePredictionEngine(tenantId, modelMetadata);
+            Cache?.SetItem(tenantId, modelMetadata.Identifier, prediction);
+        }
         
         return Predict(prediction, query);
     }
@@ -168,13 +201,13 @@ public class AutoMlExecutor : IModelExecutor
         
         MLContext mlContext = new MLContext();
 
-        var modelTransformer = mlContext.Model.Load(modelData, out DataViewSchema modelSchema);
+        var modelTransformer = mlContext.Model.Load(modelData, out DataViewSchema _);
 
         var predictionEngine = typeof(ModelOperationsCatalog)
-            .GetMethods().Where(m =>
+            .GetMethods()
+            .First(m =>
                 m.Name == "CreatePredictionEngine" && m.IsGenericMethod && m.GetParameters().Length == 4)
-            .First()
-            .MakeGenericMethod(new[] { inputType, outputType })
+            .MakeGenericMethod(inputType, outputType)
             .Invoke(mlContext.Model, new object[] { modelTransformer, true, null, null });
 
         var prediction = new AutoMlPredictionContext
@@ -189,16 +222,19 @@ public class AutoMlExecutor : IModelExecutor
         return prediction;
     }
     
-    public object Predict(AutoMlPredictionContext prediction, IDictionary<string, object> query)
+    private static object Predict(AutoMlPredictionContext prediction, IDictionary<string, object> query)
     {
-        var inputInstance = new AutoMlModelBuilder().CreateInput(prediction.InputType, prediction.Metadata, query);
+        lock (prediction)
+        {
+            var inputInstance = new AutoMlModelBuilder().CreateInput(prediction.InputType, prediction.Metadata, query);
             
-        var outputInstance = typeof(PredictionEngine<,>)
-            .MakeGenericType(new[] { prediction.InputType, prediction.OutputType })
-            .GetMethods().Where(m => m.Name == "Predict" && m.GetParameters().Length == 1)
-            .First()
-            .Invoke(prediction.PredictionEngine, new[] { inputInstance });
+            var outputInstance = typeof(PredictionEngine<,>)
+                .MakeGenericType(prediction.InputType, prediction.OutputType)
+                .GetMethods()
+                .First(m => m.Name == "Predict" && m.GetParameters().Length == 1)
+                .Invoke(prediction.PredictionEngine, new[] { inputInstance });
 
-        return outputInstance;
+            return outputInstance;    
+        }
     }
 }

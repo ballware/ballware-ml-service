@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Ballware.Ml.Caching\Ballware.Ml.Caching.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Engine\Ballware.Ml.Engine.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Metadata\Ballware.Ml.Metadata.csproj" />
     </ItemGroup>

@@ -5,6 +5,8 @@ using Ballware.Ml.Authorization;
 using Ballware.Ml.Jobs;
 using Ballware.Ml.Metadata;
 using Ballware.Meta.Client;
+using Ballware.Ml.Caching;
+using Ballware.Ml.Caching.Configuration;
 using Ballware.Ml.Engine.AutoMl;
 using Ballware.Ml.Service.Adapter;
 using Ballware.Ml.Service.Configuration;
@@ -51,6 +53,10 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 
         Services.AddOptionsWithValidateOnStart<AuthorizationOptions>()
             .Bind(Configuration.GetSection("Authorization"))
+            .ValidateDataAnnotations();
+        
+        Services.AddOptionsWithValidateOnStart<CacheOptions>()
+            .Bind(Configuration.GetSection("Cache"))
             .ValidateDataAnnotations();
         
         Services.AddOptionsWithValidateOnStart<SwaggerOptions>()
@@ -231,6 +237,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         Services.AddScoped<ITenantDataAdapter, GenericServiceTenantDataAdapter>();
         Services.AddScoped<IAutoMlFileStorageAdapter, StorageServiceFileStorageAdapter>();
         
+        Services.AddBallwareMlMemoryCaching();
         Services.AddBallwareMlAuthorizationUtils(authorizationOptions.TenantClaim, authorizationOptions.UserIdClaim, authorizationOptions.RightClaim);
         Services.AddBallwareAutoMlExecutor();
         
