@@ -38,4 +38,10 @@
       <ProjectReference Include="..\Ballware.Ml.Metadata\Ballware.Ml.Metadata.csproj" />
       <ProjectReference Include="..\Ballware.Storage.Client\Ballware.Storage.Client.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 </Project>
