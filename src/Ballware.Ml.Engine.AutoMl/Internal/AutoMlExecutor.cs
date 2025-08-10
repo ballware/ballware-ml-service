@@ -191,8 +191,10 @@ public class AutoMlExecutor : IModelExecutor
     
     private async Task<AutoMlPredictionContext> CreatePredictionEngine(Guid tenantId, ModelMetadata modelMetadata)
     {
+        var modelOptions = JsonConvert.DeserializeObject<ModelOptions>(modelMetadata.Options ?? "{}");
+        
         var modelData =
-            await StorageAdapter.AttachmentFileByNameForOwnerAsync(tenantId, "mlmodel", modelMetadata.Id, "model.zip");
+            await StorageAdapter.AttachmentFileByNameForOwnerAsync(tenantId, "mlmodel", modelMetadata.Id, modelOptions?.TrainingFileName ?? "model.zip");
         
         var inputType = new AutoMlModelBuilder().CompileInputType(tenantId, modelMetadata);
         var outputType = new AutoMlModelBuilder().CompileOutputType(tenantId, modelMetadata);
