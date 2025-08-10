@@ -2,6 +2,6 @@ namespace Ballware.Ml.Engine.AutoMl;
 
 public interface IAutoMlFileStorageAdapter
 {
-    Task<Stream> FileByNameForOwnerAsync(string owner, string fileName);
-    Task UploadFileForOwnerAsync(string owner, string fileName, string contentType, Stream data);
+    Task<Stream> AttachmentFileByNameForOwnerAsync(Guid tenantId, string entity, Guid ownerId, string fileName);
+    Task UploadAttachmentFileForOwnerAsync(Guid tenantId, Guid userId, string entity, Guid ownerId, string fileName, string contentType, Stream data);
 }
