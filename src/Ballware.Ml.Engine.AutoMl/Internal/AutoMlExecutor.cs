@@ -3,7 +3,6 @@ using System.Text;
 using Ballware.Ml.Caching;
 using Ballware.Ml.Metadata;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Microsoft.ML;
 using Microsoft.ML.AutoML;
 using Newtonsoft.Json;
@@ -98,7 +97,7 @@ public class AutoMlExecutor : IModelExecutor
 
                 stream.Position = 0;
 
-                await StorageAdapter.UploadFileForOwnerAsync(modelId.ToString(),
+                await StorageAdapter.UploadAttachmentFileForOwnerAsync(tenantId, userId, "mlmodel", modelId,
                     !string.IsNullOrEmpty(modelOptions.TrainingFileName)
                         ? modelOptions.TrainingFileName
                         : "model.zip", "application/binary", stream);
@@ -141,8 +140,8 @@ public class AutoMlExecutor : IModelExecutor
             await logStream.WriteAsync(Encoding.UTF8.GetBytes(logBuilder.ToString()));
             logStream.Position = 0;
 
-            await StorageAdapter.UploadFileForOwnerAsync(modelId.ToString(), modelOptions.TrainingLogFileName,
-                "application/binary", logStream);
+            await StorageAdapter.UploadAttachmentFileForOwnerAsync(tenantId, userId, "mlmodel", modelId,
+                modelOptions.TrainingLogFileName, "application/binary", logStream);
         }
     }
     
@@ -192,10 +191,9 @@ public class AutoMlExecutor : IModelExecutor
     
     private async Task<AutoMlPredictionContext> CreatePredictionEngine(Guid tenantId, ModelMetadata modelMetadata)
     {
-        var modelOptions = JsonConvert.DeserializeObject<ModelOptions>(modelMetadata.Options ?? "{}");
+        var modelData =
+            await StorageAdapter.AttachmentFileByNameForOwnerAsync(tenantId, "mlmodel", modelMetadata.Id, "model.zip");
         
-        var modelData = await StorageAdapter.FileByNameForOwnerAsync(modelMetadata.Id.ToString(), !string.IsNullOrEmpty(modelOptions.TrainingFileName) ? modelOptions.TrainingFileName : "model.zip");
-
         var inputType = new AutoMlModelBuilder().CompileInputType(tenantId, modelMetadata);
         var outputType = new AutoMlModelBuilder().CompileOutputType(tenantId, modelMetadata);
         

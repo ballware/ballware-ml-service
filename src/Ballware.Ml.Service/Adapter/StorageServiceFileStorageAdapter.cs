@@ -12,15 +12,16 @@ public class StorageServiceFileStorageAdapter : IAutoMlFileStorageAdapter
         Client = storageClient;
     }
     
-    public async Task<Stream> FileByNameForOwnerAsync(string owner, string fileName)
+    public async Task<Stream> AttachmentFileByNameForOwnerAsync(Guid tenantId, string entity, Guid ownerId, string fileName)
     {
-        var result = await Client.FileByNameForOwnerAsync(owner, fileName);
+        var result =
+            await Client.AttachmentDownloadForTenantEntityAndOwnerByFilenameAsync(tenantId, entity, ownerId, fileName);
         
         return result.Stream;
     }
 
-    public async Task UploadFileForOwnerAsync(string owner, string fileName, string contentType, Stream data)
+    public async Task UploadAttachmentFileForOwnerAsync(Guid tenantId, Guid userId, string entity, Guid ownerId, string fileName, string contentType, Stream data)
     {
-        await Client.UploadFileForOwnerAsync(owner, new []{ new FileParameter(data, fileName, contentType) });
+        await Client.AttachmentUploadForTenantEntityAndOwnerBehalfOfUserAsync(tenantId, userId, entity, ownerId, [new FileParameter(data, fileName, contentType)]);
     }
 }
