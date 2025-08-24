@@ -40,6 +40,17 @@ jobs:
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.cs.dotcover.reportsPaths="coverage.html"
         
+      - name: Restore dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget add source "https://nuget.pkg.github.com/ballware/index.json" \
+            --name github \
+            --username frankball \
+            --password $GITHUB_TOKEN \
+            --store-password-in-clear-text
+          dotnet restore ballware-ml-service.sln            
+        
       - name: Build solution
         run: dotnet build ballware-ml-service.sln --no-incremental --configuration Release
 

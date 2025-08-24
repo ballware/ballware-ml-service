@@ -96,6 +96,8 @@ jobs:
           context: src/.
           file: src/Ballware.Ml.Service/Dockerfile
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}          
           push: true
           tags: |
             ghcr.io/ballware/ballware-ml-service:${{ env.DOCKER_TAG }}
