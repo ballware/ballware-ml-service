@@ -31,11 +31,13 @@ jobs:
         run: dotnet tool install --global dotnet-sonarscanner
         
       - name: Start SonarQube scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: | 
           dotnet sonarscanner begin \
             /k:"ballware_ballware-ml-service" \
             /o:"ballware" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.cs.dotcover.reportsPaths="coverage.html"
         
       - name: Build solution
@@ -70,4 +72,6 @@ jobs:
             --reportType=HTML           
         
       - name: End SonarQube scan
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}" 
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN" 
