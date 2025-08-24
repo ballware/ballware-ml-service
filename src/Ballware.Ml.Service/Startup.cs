@@ -1,10 +1,9 @@
-using Ballware.Generic.Client;
-using Ballware.Ml.Api;
+using Ballware.Generic.Service.Client;
 using Ballware.Ml.Api.Endpoints;
 using Ballware.Ml.Authorization;
 using Ballware.Ml.Jobs;
 using Ballware.Ml.Metadata;
-using Ballware.Meta.Client;
+using Ballware.Meta.Service.Client;
 using Ballware.Ml.Caching;
 using Ballware.Ml.Caching.Configuration;
 using Ballware.Ml.Engine.AutoMl;
@@ -12,7 +11,7 @@ using Ballware.Ml.Service.Adapter;
 using Ballware.Ml.Service.Configuration;
 using Ballware.ML.Service.Configuration;
 using Ballware.Ml.Service.Mappings;
-using Ballware.Storage.Client;
+using Ballware.Storage.Service.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -35,7 +34,7 @@ namespace Ballware.Ml.Service;
 
 public class Startup(IWebHostEnvironment environment, ConfigurationManager configuration, IServiceCollection services)
 {
-    private readonly string ClaimTypeScope = "scope";
+    private string ClaimTypeScope { get; }= "scope";
     
     private IWebHostEnvironment Environment { get; } = environment;
     private ConfigurationManager Configuration { get; } = configuration;
@@ -192,7 +191,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
                 client.Scope = genericClientOptions.Scopes;
             });
         
-        Services.AddHttpClient<BallwareMetaClient>(client =>
+        Services.AddHttpClient<MetaServiceClient>(client =>
             {
                 client.BaseAddress = new Uri(metaClientOptions.ServiceUrl);
             })
@@ -204,7 +203,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 #endif                  
             .AddClientCredentialsTokenHandler("meta");
 
-        Services.AddHttpClient<BallwareStorageClient>(client =>
+        Services.AddHttpClient<StorageServiceClient>(client =>
             {
                 client.BaseAddress = new Uri(storageClientOptions.ServiceUrl);
             })
@@ -216,7 +215,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 #endif            
             .AddClientCredentialsTokenHandler("storage");
         
-        Services.AddHttpClient<BallwareGenericClient>(client =>
+        Services.AddHttpClient<GenericServiceClient>(client =>
             {
                 client.BaseAddress = new Uri(genericClientOptions.ServiceUrl);
             })

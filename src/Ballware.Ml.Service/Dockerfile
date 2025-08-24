@@ -14,9 +14,6 @@ COPY ./Ballware.Ml.Engine.AutoMl ./Ballware.Ml.Engine.AutoMl
 COPY ./Ballware.Ml.Jobs ./Ballware.Ml.Jobs
 COPY ./Ballware.Ml.Metadata ./Ballware.Ml.Metadata
 COPY ./Ballware.Ml.Service ./Ballware.Ml.Service
-COPY ./Ballware.Meta.Client ./Ballware.Meta.Client
-COPY ./Ballware.Generic.Client ./Ballware.Generic.Client
-COPY ./Ballware.Storage.Client ./Ballware.Storage.Client
 
 WORKDIR "/src/Ballware.Ml.Service"
 RUN dotnet build "Ballware.Ml.Service.csproj" -c Release -o /app/build

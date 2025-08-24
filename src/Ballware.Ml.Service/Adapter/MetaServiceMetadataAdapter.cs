@@ -1,5 +1,5 @@
 using AutoMapper;
-using Ballware.Meta.Client;
+using Ballware.Meta.Service.Client;
 using Ballware.Ml.Metadata;
 
 namespace Ballware.Ml.Service.Adapter;
@@ -7,9 +7,9 @@ namespace Ballware.Ml.Service.Adapter;
 public class MetaServiceMetadataAdapter : IMetadataAdapter
 {
     private IMapper Mapper { get; }
-    private BallwareMetaClient Client { get; }
+    private MetaServiceClient Client { get; }
     
-    public MetaServiceMetadataAdapter(IMapper mapper, BallwareMetaClient metaClient)
+    public MetaServiceMetadataAdapter(IMapper mapper, MetaServiceClient metaClient)
     {
         Mapper = mapper;
         Client = metaClient;

@@ -1,13 +1,13 @@
-using Ballware.Generic.Client;
+using Ballware.Generic.Service.Client;
 using Ballware.Ml.Metadata;
 
 namespace Ballware.Ml.Service.Adapter;
 
 public class GenericServiceTenantDataAdapter : ITenantDataAdapter
 {
-    private BallwareGenericClient Client { get; }
+    private GenericServiceClient Client { get; }
     
-    public GenericServiceTenantDataAdapter(BallwareGenericClient genericClient)
+    public GenericServiceTenantDataAdapter(GenericServiceClient genericClient)
     {
         Client = genericClient;
     }

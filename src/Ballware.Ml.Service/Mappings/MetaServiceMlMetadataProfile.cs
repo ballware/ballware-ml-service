@@ -6,7 +6,7 @@ public class MetaServiceMlMetadataProfile : Profile
 {
     public MetaServiceMlMetadataProfile()
     {
-        CreateMap<Ballware.Meta.Client.MlModel, Ballware.Ml.Metadata.ModelMetadata>();
-        CreateMap<Ballware.Ml.Metadata.UpdateMlModelTrainingStatePayload, Ballware.Meta.Client.MlModelTrainingState>();
+        CreateMap<Ballware.Meta.Service.Client.MlModel, Ballware.Ml.Metadata.ModelMetadata>();
+        CreateMap<Ballware.Ml.Metadata.UpdateMlModelTrainingStatePayload, Ballware.Meta.Service.Client.MlModelTrainingState>();
     }
 }

@@ -1,13 +1,13 @@
 using Ballware.Ml.Engine.AutoMl;
-using Ballware.Storage.Client;
+using Ballware.Storage.Service.Client;
 
 namespace Ballware.Ml.Service.Adapter;
 
 public class StorageServiceFileStorageAdapter : IAutoMlFileStorageAdapter
 {
-    private BallwareStorageClient Client { get; }
+    private StorageServiceClient Client { get; }
     
-    public StorageServiceFileStorageAdapter(BallwareStorageClient storageClient)
+    public StorageServiceFileStorageAdapter(StorageServiceClient storageClient)
     {
         Client = storageClient;
     }
