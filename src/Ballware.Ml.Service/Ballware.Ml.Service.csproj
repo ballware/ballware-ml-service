@@ -16,6 +16,10 @@
         <PackageReference Include="Duende.AccessTokenManagement" Version="3.1.1" />
         <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" Version="3.1.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />        
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.19">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>        
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.16" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />        
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
@@ -34,6 +38,9 @@
       <ProjectReference Include="..\Ballware.Ml.Api\Ballware.Ml.Api.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Authorization\Ballware.Ml.Authorization.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Caching\Ballware.Ml.Caching.csproj" />
+      <ProjectReference Include="..\Ballware.Ml.Data.Ef.Postgres\Ballware.Ml.Data.Ef.Postgres.csproj" />
+      <ProjectReference Include="..\Ballware.Ml.Data.Ef.SqlServer\Ballware.Ml.Data.Ef.SqlServer.csproj" />
+      <ProjectReference Include="..\Ballware.Ml.Data.Ef\Ballware.Ml.Data.Ef.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Engine.AutoMl\Ballware.Ml.Engine.AutoMl.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Engine\Ballware.Ml.Engine.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Jobs\Ballware.Ml.Jobs.csproj" />

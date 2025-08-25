@@ -20,6 +20,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Ml.Authorization.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Ml.Service.Client", "src\Ballware.Ml.Service.Client\Ballware.Ml.Service.Client.csproj", "{6B9AED0E-2F1B-4FBA-89C5-C1684D36120B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Ml.Data", "src\Ballware.Ml.Data\Ballware.Ml.Data.csproj", "{F72F3916-92E8-4404-A3DD-3DD110307E7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Ml.Data.Ef", "src\Ballware.Ml.Data.Ef\Ballware.Ml.Data.Ef.csproj", "{E1C487C5-3E1C-497D-80C4-A7260E55B47B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Ml.Data.Ef.Postgres", "src\Ballware.Ml.Data.Ef.Postgres\Ballware.Ml.Data.Ef.Postgres.csproj", "{8C99095F-CAA1-4CFC-92CA-5696DEC51058}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ballware.Ml.Data.Ef.SqlServer", "src\Ballware.Ml.Data.Ef.SqlServer\Ballware.Ml.Data.Ef.SqlServer.csproj", "{3A106794-2BA8-4E31-8B73-09BFEF2EE9B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,5 +74,21 @@ Global
 		{6B9AED0E-2F1B-4FBA-89C5-C1684D36120B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B9AED0E-2F1B-4FBA-89C5-C1684D36120B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B9AED0E-2F1B-4FBA-89C5-C1684D36120B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F72F3916-92E8-4404-A3DD-3DD110307E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F72F3916-92E8-4404-A3DD-3DD110307E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F72F3916-92E8-4404-A3DD-3DD110307E7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F72F3916-92E8-4404-A3DD-3DD110307E7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1C487C5-3E1C-497D-80C4-A7260E55B47B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1C487C5-3E1C-497D-80C4-A7260E55B47B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1C487C5-3E1C-497D-80C4-A7260E55B47B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1C487C5-3E1C-497D-80C4-A7260E55B47B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C99095F-CAA1-4CFC-92CA-5696DEC51058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C99095F-CAA1-4CFC-92CA-5696DEC51058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C99095F-CAA1-4CFC-92CA-5696DEC51058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C99095F-CAA1-4CFC-92CA-5696DEC51058}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A106794-2BA8-4E31-8B73-09BFEF2EE9B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A106794-2BA8-4E31-8B73-09BFEF2EE9B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A106794-2BA8-4E31-8B73-09BFEF2EE9B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A106794-2BA8-4E31-8B73-09BFEF2EE9B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
