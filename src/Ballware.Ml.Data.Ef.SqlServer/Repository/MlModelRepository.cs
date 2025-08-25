@@ -14,6 +14,6 @@ public class MlModelRepository : MlModelBaseRepository
 
     public override Task<string> GenerateListQueryAsync(Guid tenantId)
     {
-        return Task.FromResult($"select Uuid as Id, Identifier from MlModel where TenantId='{tenantId}'");
+        return Task.FromResult($"select uuid as Id, identifier as Identifier from ml_model where tenant_id='{tenantId}'");
     }
 }

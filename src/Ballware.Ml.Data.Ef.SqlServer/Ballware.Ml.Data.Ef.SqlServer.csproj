@@ -15,11 +15,11 @@
     <ItemGroup>
         <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.19">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.17">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.19" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.17" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     </ItemGroup>
 

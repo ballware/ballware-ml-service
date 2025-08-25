@@ -55,6 +55,8 @@ jobs:
         run: dotnet build ballware-ml-service.sln --no-incremental --configuration Release
 
       - name: Run coverage for all test projects
+        env:
+          "TestSettings__DatabasePassword": ${{ secrets.TEST_ML_PASSWORD }}
         run: |
           mkdir -p coverage
           i=0
