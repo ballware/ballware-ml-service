@@ -10,8 +10,11 @@ ARG GITHUB_PAT
 WORKDIR /src
 
 COPY ./Ballware.Ml.Api ./Ballware.Ml.Api
-COPY ./Ballware.Ml.Authorization ./Ballware.Ml.Authorization
 COPY ./Ballware.Ml.Caching ./Ballware.Ml.Caching
+COPY ./Ballware.Ml.Data ./Ballware.Ml.Data
+COPY ./Ballware.Ml.Data.Ef ./Ballware.Ml.Data.Ef
+COPY ./Ballware.Ml.Data.Ef.Postgres ./Ballware.Ml.Data.Ef.Postgres
+COPY ./Ballware.Ml.Data.Ef.SqlServer ./Ballware.Ml.Data.Ef.SqlServer
 COPY ./Ballware.Ml.Engine ./Ballware.Ml.Engine
 COPY ./Ballware.Ml.Engine.AutoMl ./Ballware.Ml.Engine.AutoMl
 COPY ./Ballware.Ml.Jobs ./Ballware.Ml.Jobs

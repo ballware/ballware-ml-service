@@ -36,7 +36,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Ballware.Ml.Api\Ballware.Ml.Api.csproj" />
-      <ProjectReference Include="..\Ballware.Ml.Authorization\Ballware.Ml.Authorization.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Caching\Ballware.Ml.Caching.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Data.Ef.Postgres\Ballware.Ml.Data.Ef.Postgres.csproj" />
       <ProjectReference Include="..\Ballware.Ml.Data.Ef.SqlServer\Ballware.Ml.Data.Ef.SqlServer.csproj" />

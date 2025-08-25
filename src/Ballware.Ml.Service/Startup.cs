@@ -1,6 +1,6 @@
 using Ballware.Generic.Service.Client;
 using Ballware.Ml.Api.Endpoints;
-using Ballware.Ml.Authorization;
+using Ballware.Shared.Authorization;
 using Ballware.Ml.Jobs;
 using Ballware.Ml.Metadata;
 using Ballware.Meta.Service.Client;
@@ -264,7 +264,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         }
         
         Services.AddBallwareMlMemoryCaching();
-        Services.AddBallwareMlAuthorizationUtils(authorizationOptions.TenantClaim, authorizationOptions.UserIdClaim, authorizationOptions.RightClaim);
+        Services.AddBallwareSharedAuthorizationUtils(authorizationOptions.TenantClaim, authorizationOptions.UserIdClaim, authorizationOptions.RightClaim);
         Services.AddBallwareAutoMlExecutor();
         
         Services.AddEndpointsApiExplorer();

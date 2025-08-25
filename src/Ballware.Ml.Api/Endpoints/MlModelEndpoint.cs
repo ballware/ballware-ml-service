@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Ballware.Ml.Authorization;
+using Ballware.Shared.Authorization;
 using Ballware.Ml.Engine;
 using Ballware.Ml.Metadata;
 using Microsoft.AspNetCore.Builder;
