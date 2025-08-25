@@ -38,7 +38,8 @@ jobs:
             /k:"ballware_ballware-ml-service" \
             /o:"ballware" \
             /d:sonar.token="$SONAR_TOKEN" \
-            /d:sonar.cs.dotcover.reportsPaths="coverage.html"
+            /d:sonar.cs.dotcover.reportsPaths="coverage.html" \
+            /d:sonar.exclusions="**/Migrations/**/*"
         
       - name: Restore dependencies
         env:
