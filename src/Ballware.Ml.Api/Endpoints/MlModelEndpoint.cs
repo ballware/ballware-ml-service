@@ -1,12 +1,12 @@
 using System.Security.Claims;
-using Ballware.Ml.Authorization;
+using Ballware.Ml.Data.Common;
+using Ballware.Ml.Data.Repository;
+using Ballware.Ml.Data.SelectLists;
+using Ballware.Shared.Authorization;
 using Ballware.Ml.Engine;
-using Ballware.Ml.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Primitives;
 using Quartz;
 
 namespace Ballware.Ml.Api.Endpoints;
@@ -23,6 +23,25 @@ public static class MlModelEndpoint
         string authorizationScope = "mlApi",
         string apiGroup = "ml")
     {
+        app.MapGet(basePath + "/selectlist", HandleSelectListAsync)
+            .RequireAuthorization(authorizationScope)
+            .Produces<IEnumerable<MlModelSelectListEntry>>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .WithName(apiOperationPrefix + "SelectList")
+            .WithGroupName(apiGroup)
+            .WithTags(apiTag)
+            .WithSummary("Query list of all documents");
+        
+        app.MapGet(basePath + "/selectbyid/{id}", HandleSelectByIdAsync)
+            .RequireAuthorization(authorizationScope)
+            .Produces<MlModelSelectListEntry>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName(apiOperationPrefix + "SelectById")
+            .WithGroupName(apiGroup)
+            .WithTags(apiTag)
+            .WithSummary("Query select item by id");
+        
         app.MapGet(basePath + "/consumebyid/{modelId}", HandleConsumeByIdAsync)
             .RequireAuthorization(authorizationScope)
             .Produces<object>()
@@ -56,6 +75,8 @@ public static class MlModelEndpoint
             .RequireAuthorization(authorizationScope)
             .Produces<object>()
             .Produces(StatusCodes.Status401Unauthorized)
+            .WithMetadata(new HttpMethodMetadata(["POST"]))
+            .Accepts<Dictionary<string, object>>("application/json")
             .WithName(apiOperationPrefix + "ConsumeByIdBehalfOfUser")
             .WithGroupName(apiGroup)
             .WithTags(apiTag)
@@ -65,12 +86,35 @@ public static class MlModelEndpoint
             .RequireAuthorization(authorizationScope)
             .Produces<object>()
             .Produces(StatusCodes.Status401Unauthorized)
+            .WithMetadata(new HttpMethodMetadata(["POST"]))
+            .Accepts<Dictionary<string, object>>("application/json")
             .WithName(apiOperationPrefix + "ConsumeByIdentifierBehalfOfUser")
             .WithGroupName(apiGroup)
             .WithTags(apiTag)
             .WithSummary("Consume model by identifier behalf of user");
         
         return app;
+    }
+    
+    private static async Task<IResult> HandleSelectListAsync(IPrincipalUtils principalUtils, IMlModelMetaRepository repository, ClaimsPrincipal user)
+    {
+        var tenantId = principalUtils.GetUserTenandId(user);
+
+        return Results.Ok(await repository.SelectListForTenantAsync(tenantId));
+    }
+    
+    private static async Task<IResult> HandleSelectByIdAsync(IPrincipalUtils principalUtils, IMlModelMetaRepository repository, ClaimsPrincipal user, Guid id)
+    {
+        var tenantId = principalUtils.GetUserTenandId(user);
+        
+        var entry = await repository.SelectByIdForTenantAsync(tenantId, id);
+
+        if (entry == null)
+        {
+            return Results.NotFound();
+        }
+        
+        return Results.Ok(entry);
     }
     
     private static async Task<IResult> HandleConsumeByIdAsync(IPrincipalUtils principalUtils, IModelExecutor executor, ClaimsPrincipal user, Guid modelId, QueryValueBag query)
@@ -82,7 +126,7 @@ public static class MlModelEndpoint
         return Results.Ok(prediction);
     }
     
-    private static async Task<IResult> HandleTrainAsync(ISchedulerFactory schedulerFactory, IPrincipalUtils principalUtils, IMetadataAdapter metadataAdapter, ClaimsPrincipal user, QueryValueBag query)
+    private static async Task<IResult> HandleTrainAsync(ISchedulerFactory schedulerFactory, IPrincipalUtils principalUtils, IMlModelMetaRepository mlModelMetaRepository, ClaimsPrincipal user, QueryValueBag query)
     {
         var tenantId = principalUtils.GetUserTenandId(user);
         var userId = principalUtils.GetUserId(user);
@@ -107,14 +151,14 @@ public static class MlModelEndpoint
                 jobData["userId"] = userId;
                 jobData["modelId"] = Guid.Parse(id);
                 
-                var updateTrainingStatePayload = new UpdateMlModelTrainingStatePayload()
+                var updateTrainingStatePayload = new MlModelTrainingState()
                 {
                     Id = Guid.Parse(id),
                     State = MlModelTrainingStates.Queued,
                     Result = string.Empty,
                 };
                 
-                await metadataAdapter.MlModelUpdateTrainingStateBehalfOfUserAsync(tenantId, userId, updateTrainingStatePayload);
+                await mlModelMetaRepository.SaveTrainingStateAsync(tenantId, userId, updateTrainingStatePayload);
                 
                 await (await schedulerFactory.GetScheduler()).TriggerJob(JobKey.Create("train", "ml"), jobData);
             }

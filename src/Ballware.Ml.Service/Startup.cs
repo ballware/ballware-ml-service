@@ -1,16 +1,23 @@
 using Ballware.Generic.Service.Client;
 using Ballware.Ml.Api.Endpoints;
-using Ballware.Ml.Authorization;
+using Ballware.Shared.Authorization;
 using Ballware.Ml.Jobs;
 using Ballware.Ml.Metadata;
 using Ballware.Meta.Service.Client;
 using Ballware.Ml.Caching;
 using Ballware.Ml.Caching.Configuration;
+using Ballware.Ml.Data.Ef;
+using Ballware.Ml.Data.Ef.Configuration;
+using Ballware.Ml.Data.Ef.Postgres;
+using Ballware.Ml.Data.Ef.SqlServer;
 using Ballware.Ml.Engine.AutoMl;
 using Ballware.Ml.Service.Adapter;
 using Ballware.Ml.Service.Configuration;
 using Ballware.ML.Service.Configuration;
 using Ballware.Ml.Service.Mappings;
+using Ballware.Shared.Api;
+using Ballware.Shared.Api.Endpoints;
+using Ballware.Shared.Authorization.Jint;
 using Ballware.Storage.Service.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -45,13 +52,18 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         CorsOptions? corsOptions = Configuration.GetSection("Cors").Get<CorsOptions>();
         AuthorizationOptions? authorizationOptions =
             Configuration.GetSection("Authorization").Get<AuthorizationOptions>();
+        StorageOptions? storageOptions = Configuration.GetSection("Storage").Get<StorageOptions>();
         SwaggerOptions? swaggerOptions = Configuration.GetSection("Swagger").Get<SwaggerOptions>();
         ServiceClientOptions? metaClientOptions = Configuration.GetSection("MetaClient").Get<ServiceClientOptions>();
         ServiceClientOptions? storageClientOptions = Configuration.GetSection("StorageClient").Get<ServiceClientOptions>();
         ServiceClientOptions? genericClientOptions = Configuration.GetSection("GenericClient").Get<ServiceClientOptions>();
-
+        
         Services.AddOptionsWithValidateOnStart<AuthorizationOptions>()
             .Bind(Configuration.GetSection("Authorization"))
+            .ValidateDataAnnotations();
+        
+        Services.AddOptionsWithValidateOnStart<StorageOptions>()
+            .Bind(Configuration.GetSection("Storage"))
             .ValidateDataAnnotations();
         
         Services.AddOptionsWithValidateOnStart<CacheOptions>()
@@ -74,9 +86,16 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
             .Bind(Configuration.GetSection("GenericClient"))
             .ValidateDataAnnotations();
         
-        if (authorizationOptions == null)
+        if (authorizationOptions == null || storageOptions == null)
         {
-            throw new ConfigurationException("Required configuration for authorization is missing");
+            throw new ConfigurationException("Required configuration for authorization and storage is missing");
+        }
+        
+        var mlConnectionString = Configuration.GetConnectionString(storageOptions.ConnectionString);
+
+        if (string.IsNullOrEmpty(mlConnectionString))
+        {
+            throw new ConfigurationException("Connection string for storage is missing");
         }
 
         if (metaClientOptions == null)
@@ -229,15 +248,32 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         
         Services.AddAutoMapper(config =>
         {
+            config.AddBallwareMlStorageMappings();
             config.AddProfile<MetaServiceMlMetadataProfile>();
         });
         
-        Services.AddScoped<IMetadataAdapter, MetaServiceMetadataAdapter>();
+        Services.AddBallwareSharedJintRightsChecker();
+        Services.AddBallwareSharedApiDependencies();
+        
+        Services.AddScoped<IAuthorizationMetadataProvider, MetaServiceMetadataAdapter>();
+        Services.AddScoped<IJobMetadataProvider, MetaServiceMetadataAdapter>();
+        Services.AddScoped<IExportMetadataProvider, MetaServiceMetadataAdapter>();
         Services.AddScoped<ITenantDataAdapter, GenericServiceTenantDataAdapter>();
+        Services.AddScoped<IFileStorageProvider, StorageServiceFileStorageAdapter>();
         Services.AddScoped<IAutoMlFileStorageAdapter, StorageServiceFileStorageAdapter>();
         
+        if ("mssql".Equals(storageOptions.Provider, StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrEmpty(mlConnectionString))
+        {
+            Services.AddBallwareMlStorageForSqlServer(storageOptions, mlConnectionString);
+        } 
+        else if ("postgres".Equals(storageOptions.Provider, StringComparison.InvariantCultureIgnoreCase) &&
+                   !string.IsNullOrEmpty(mlConnectionString))
+        {
+            Services.AddBallwareMlStorageForPostgres(storageOptions, mlConnectionString);
+        }
+        
         Services.AddBallwareMlMemoryCaching();
-        Services.AddBallwareMlAuthorizationUtils(authorizationOptions.TenantClaim, authorizationOptions.UserIdClaim, authorizationOptions.RightClaim);
+        Services.AddBallwareSharedAuthorizationUtils(authorizationOptions.TenantClaim, authorizationOptions.UserIdClaim, authorizationOptions.RightClaim);
         Services.AddBallwareAutoMlExecutor();
         
         Services.AddEndpointsApiExplorer();
@@ -319,8 +355,9 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 
         app.UseAuthorization();
 
-        app.MapMlModelUserApi("/ml");
-        app.MapMlModelServiceApi("/ml");
+        app.MapMlModelUserApi("/ml/mlmodel");
+        app.MapMlModelServiceApi("/ml/mlmodel");
+        app.MapTenantableEditingApi<Data.Public.MlModel>("/ml/mlmodel", "meta", "mlmodel", "MlModel", "MlModel", "mlApi", "mlmodel");
         
         var authorizationOptions = app.Services.GetService<IOptions<AuthorizationOptions>>()?.Value;
         var swaggerOptions = app.Services.GetService<IOptions<SwaggerOptions>>()?.Value;
