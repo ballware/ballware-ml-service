@@ -359,6 +359,8 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         app.MapMlModelServiceApi("/ml/mlmodel");
         app.MapTenantableEditingApi<Data.Public.MlModel>("/ml/mlmodel", "meta", "mlmodel", "MlModel", "MlModel", "mlApi", "mlmodel");
         
+        app.MapMlTenantServiceApi("/ml/tenant");
+        
         var authorizationOptions = app.Services.GetService<IOptions<AuthorizationOptions>>()?.Value;
         var swaggerOptions = app.Services.GetService<IOptions<SwaggerOptions>>()?.Value;
 
