@@ -15,6 +15,9 @@ using Ballware.Ml.Service.Adapter;
 using Ballware.Ml.Service.Configuration;
 using Ballware.ML.Service.Configuration;
 using Ballware.Ml.Service.Mappings;
+using Ballware.Shared.Api;
+using Ballware.Shared.Api.Endpoints;
+using Ballware.Shared.Authorization.Jint;
 using Ballware.Storage.Service.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -249,8 +252,14 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
             config.AddProfile<MetaServiceMlMetadataProfile>();
         });
         
-        Services.AddScoped<IMetadataAdapter, MetaServiceMetadataAdapter>();
+        Services.AddBallwareSharedJintRightsChecker();
+        Services.AddBallwareSharedApiDependencies();
+        
+        Services.AddScoped<IAuthorizationMetadataProvider, MetaServiceMetadataAdapter>();
+        Services.AddScoped<IJobMetadataProvider, MetaServiceMetadataAdapter>();
+        Services.AddScoped<IExportMetadataProvider, MetaServiceMetadataAdapter>();
         Services.AddScoped<ITenantDataAdapter, GenericServiceTenantDataAdapter>();
+        Services.AddScoped<IFileStorageProvider, StorageServiceFileStorageAdapter>();
         Services.AddScoped<IAutoMlFileStorageAdapter, StorageServiceFileStorageAdapter>();
         
         if ("mssql".Equals(storageOptions.Provider, StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrEmpty(mlConnectionString))
@@ -346,8 +355,9 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 
         app.UseAuthorization();
 
-        app.MapMlModelUserApi("/ml");
-        app.MapMlModelServiceApi("/ml");
+        app.MapMlModelUserApi("/ml/mlmodel");
+        app.MapMlModelServiceApi("/ml/mlmodel");
+        app.MapTenantableEditingApi<Data.Public.MlModel>("/ml/mlmodel", "meta", "mlmodel", "MlModel", "MlModel", "mlApi", "mlmodel");
         
         var authorizationOptions = app.Services.GetService<IOptions<AuthorizationOptions>>()?.Value;
         var swaggerOptions = app.Services.GetService<IOptions<SwaggerOptions>>()?.Value;

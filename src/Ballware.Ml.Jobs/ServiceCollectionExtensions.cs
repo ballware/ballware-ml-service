@@ -1,4 +1,6 @@
 using Ballware.Ml.Jobs.Internal;
+using Ballware.Shared.Api.Jobs;
+using Ballware.Shared.Data.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.AspNetCore;
@@ -11,6 +13,9 @@ public static class ServiceCollectionExtensions
     {
         services.AddQuartz(q =>
         {
+            var importJobName = "import";
+            
+            q.AddJob<TenantableImportJob<Data.Public.MlModel, ITenantableRepository<Data.Public.MlModel>>>(new JobKey(importJobName, "mlmodel"), configurator => configurator.StoreDurably());
             q.AddJob<ModelTrainJob>(ModelTrainJob.Key, configurator => configurator.StoreDurably());
         });
 

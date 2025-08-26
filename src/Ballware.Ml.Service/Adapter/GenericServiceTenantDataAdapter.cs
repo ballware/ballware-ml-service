@@ -12,8 +12,8 @@ public class GenericServiceTenantDataAdapter : ITenantDataAdapter
         Client = genericClient;
     }
     
-    public async Task<IEnumerable<object>> MlModelTrainingdataByTenantAndIdAsync(Guid tenantId, Guid modelId)
+    public async Task<IEnumerable<object>> MlModelTrainingdataByTenantAndPlainQueryAsync(Guid tenantId, string query)
     {
-        return await Client.MlModelTrainingDataByTenantAndIdAsync(tenantId, modelId);
+        return await Client.MlModelTrainingDataByTenantAndPlainQueryAsync(tenantId, query);
     }
 }
