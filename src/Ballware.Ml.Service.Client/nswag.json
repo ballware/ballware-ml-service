@@ -17,7 +17,7 @@
       "disposeHttpClient": true,
       "useBaseUrl": false,
       "generateClientClasses": true,
-      "generateClientInterfaces": false,
+      "generateClientInterfaces": true,
       "generateResponseClasses": true,
       "responseClass": "SwaggerResponse",
       "exceptionClass": "SwaggerException",
