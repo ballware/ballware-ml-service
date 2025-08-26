@@ -18,6 +18,7 @@ COPY ./Ballware.Ml.Data.Ef.SqlServer ./Ballware.Ml.Data.Ef.SqlServer
 COPY ./Ballware.Ml.Engine ./Ballware.Ml.Engine
 COPY ./Ballware.Ml.Engine.AutoMl ./Ballware.Ml.Engine.AutoMl
 COPY ./Ballware.Ml.Jobs ./Ballware.Ml.Jobs
+COPY ./Ballware.Ml.Metadata ./Ballware.Ml.Metadata
 COPY ./Ballware.Ml.Service ./Ballware.Ml.Service
 
 WORKDIR "/src/Ballware.Ml.Service"
