@@ -1,7 +1,8 @@
 using System.Reflection;
 using System.Reflection.Emit;
+using Ballware.Ml.Data.Public;
+using Ballware.Ml.Data.Common;
 using Ballware.Ml.Metadata;
-using Microsoft.Extensions.Primitives;
 using Microsoft.ML;
 using Microsoft.ML.AutoML;
 using Microsoft.ML.Data;
@@ -11,13 +12,13 @@ namespace Ballware.Ml.Engine.AutoMl.Internal;
 
 class AutoMlModelBuilder
 {
-    public ColumnInformation BuildColumnInformation(ModelMetadata metaData)
+    public ColumnInformation BuildColumnInformation(MlModel metaData)
     {
         var result = new ColumnInformation();
         
         switch (metaData.Type)
         {
-            case ModelTypes.Regression:
+            case MlModelTypes.Regression:
             {
                 var regressionOptions = JsonConvert.DeserializeObject<RegressionOptions>(metaData.Options);
                 
@@ -56,13 +57,13 @@ class AutoMlModelBuilder
         return result;
     }
     
-    public DataViewSchema BuildDataViewSchema(ModelMetadata metaData)
+    public DataViewSchema BuildDataViewSchema(MlModel metaData)
     {
         var builder = new DataViewSchema.Builder();
         
         switch (metaData.Type)
         {
-            case ModelTypes.Regression:
+            case MlModelTypes.Regression:
             {
                 var regressionOptions = JsonConvert.DeserializeObject<RegressionOptions>(metaData.Options);
                 
@@ -148,7 +149,7 @@ class AutoMlModelBuilder
         return value;
     }
 
-    public object CreateInput(Type inputType, ModelMetadata metaData, IDictionary<string, object> query)
+    public object CreateInput(Type inputType, MlModel metaData, IDictionary<string, object> query)
     {
         var inputInstance = inputType.GetConstructors()
             .Where(x => x.GetParameters().Length == 0)
@@ -173,13 +174,13 @@ class AutoMlModelBuilder
         return inputInstance;
     }
     
-    public Type CompileInputType(Guid tenantId, ModelMetadata metaData)
+    public Type CompileInputType(Guid tenantId, MlModel metaData)
     {
         TypeBuilder tb = GetTypeBuilder(tenantId, $"{metaData.Identifier}_Input");
         
         switch (metaData.Type)
         {
-            case ModelTypes.Regression:
+            case MlModelTypes.Regression:
             {
                 var regressionOptions = JsonConvert.DeserializeObject<RegressionOptions>(metaData.Options);
                     
@@ -202,13 +203,13 @@ class AutoMlModelBuilder
         return tb.CreateType();
     }
     
-    public Type CompileOutputType(Guid tenantId, ModelMetadata metaData)
+    public Type CompileOutputType(Guid tenantId, MlModel metaData)
     {
         TypeBuilder tb = GetTypeBuilder(tenantId, $"{metaData.Identifier}_Output");
         
         switch (metaData.Type)
         {
-            case ModelTypes.Regression:
+            case MlModelTypes.Regression:
                 {
                     var regressionOptions = JsonConvert.DeserializeObject<RegressionOptions>(metaData.Options);
                         

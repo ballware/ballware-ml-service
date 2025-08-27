@@ -1,19 +1,19 @@
-using Ballware.Generic.Client;
+using Ballware.Generic.Service.Client;
 using Ballware.Ml.Metadata;
 
 namespace Ballware.Ml.Service.Adapter;
 
 public class GenericServiceTenantDataAdapter : ITenantDataAdapter
 {
-    private BallwareGenericClient Client { get; }
+    private GenericServiceClient Client { get; }
     
-    public GenericServiceTenantDataAdapter(BallwareGenericClient genericClient)
+    public GenericServiceTenantDataAdapter(GenericServiceClient genericClient)
     {
         Client = genericClient;
     }
     
-    public async Task<IEnumerable<object>> MlModelTrainingdataByTenantAndIdAsync(Guid tenantId, Guid modelId)
+    public async Task<IEnumerable<object>> MlModelTrainingdataByTenantAndPlainQueryAsync(Guid tenantId, string query)
     {
-        return await Client.MlModelTrainingDataByTenantAndIdAsync(tenantId, modelId);
+        return await Client.MlModelTrainingDataByTenantAndPlainQueryAsync(tenantId, query);
     }
 }

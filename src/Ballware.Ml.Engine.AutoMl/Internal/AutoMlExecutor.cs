@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Text;
 using Ballware.Ml.Caching;
+using Ballware.Ml.Data.Common;
+using Ballware.Ml.Data.Public;
+using Ballware.Ml.Data.Repository;
 using Ballware.Ml.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML;
@@ -13,15 +16,15 @@ namespace Ballware.Ml.Engine.AutoMl.Internal;
 public class AutoMlExecutor : IModelExecutor
 {
     private ILogger<AutoMlExecutor> Logger { get; }
-    private IMetadataAdapter MetadataAdapter { get; }
+    private IMlModelMetaRepository MlModelMetaRepository { get; }
     private ITenantDataAdapter TenantDataAdapter { get; }
     private IAutoMlFileStorageAdapter StorageAdapter { get; }
     private ITenantAwareModelCache? Cache { get; }
     
-    public AutoMlExecutor(ILogger<AutoMlExecutor> logger, IMetadataAdapter metadataAdapter, ITenantDataAdapter tenantDataAdapter, IAutoMlFileStorageAdapter storageAdapter, ITenantAwareModelCache? cache)
+    public AutoMlExecutor(ILogger<AutoMlExecutor> logger, IMlModelMetaRepository mlModelMetaRepository, ITenantDataAdapter tenantDataAdapter, IAutoMlFileStorageAdapter storageAdapter, ITenantAwareModelCache? cache)
     {
         Logger = logger;
-        MetadataAdapter = metadataAdapter;
+        MlModelMetaRepository = mlModelMetaRepository;
         TenantDataAdapter = tenantDataAdapter;
         StorageAdapter = storageAdapter;
         Cache = cache;
@@ -31,8 +34,8 @@ public class AutoMlExecutor : IModelExecutor
     {
         var logBuilder = new StringBuilder();
 
-        await MetadataAdapter.MlModelUpdateTrainingStateBehalfOfUserAsync(tenantId, userId,
-            new UpdateMlModelTrainingStatePayload()
+        await MlModelMetaRepository.SaveTrainingStateAsync(tenantId, userId,
+            new MlModelTrainingState()
             {
                 Id = modelId,
                 State = MlModelTrainingStates.InProgress,
@@ -48,7 +51,7 @@ public class AutoMlExecutor : IModelExecutor
             }
         };
 
-        var modelMetadata = await MetadataAdapter.MlModelMetadataByTenantAndIdAsync(tenantId, modelId);
+        var modelMetadata = await MlModelMetaRepository.MetadataByTenantAndIdAsync(tenantId, modelId);
         
         var modelOptions = JsonConvert.DeserializeObject<ModelOptions>(modelMetadata.Options ?? "{}");
         
@@ -64,7 +67,7 @@ public class AutoMlExecutor : IModelExecutor
             .First(m => m.Name == "ToObject" && m.GetParameters().Length == 0)
             .MakeGenericMethod(inputType);
         
-        var trainingData = (await TenantDataAdapter.MlModelTrainingdataByTenantAndIdAsync(tenantId, modelId)).ToList();
+        var trainingData = (await TenantDataAdapter.MlModelTrainingdataByTenantAndPlainQueryAsync(tenantId, modelMetadata.TrainSql)).ToList();
 
         foreach (var td in trainingData)
         {
@@ -105,7 +108,7 @@ public class AutoMlExecutor : IModelExecutor
             
             Cache?.PurgeItem(tenantId, modelMetadata.Identifier);
             
-            await MetadataAdapter.MlModelUpdateTrainingStateBehalfOfUserAsync(tenantId, userId, new UpdateMlModelTrainingStatePayload()
+            await MlModelMetaRepository.SaveTrainingStateAsync(tenantId, userId, new MlModelTrainingState()
             {
                 Id = modelId,
                 State = MlModelTrainingStates.UpToDate,
@@ -122,7 +125,7 @@ public class AutoMlExecutor : IModelExecutor
         }
         catch (Exception ex)
         {
-            await MetadataAdapter.MlModelUpdateTrainingStateBehalfOfUserAsync(tenantId, userId, new UpdateMlModelTrainingStatePayload()
+            await MlModelMetaRepository.SaveTrainingStateAsync(tenantId, userId, new MlModelTrainingState()
             {
                 Id = modelId,
                 State = MlModelTrainingStates.Error,
@@ -147,7 +150,7 @@ public class AutoMlExecutor : IModelExecutor
     
     public async Task<object> PredictAsync(Guid tenantId, Guid modelId, IDictionary<string, object> query)
     {   
-        var modelMetadata = await MetadataAdapter.MlModelMetadataByTenantAndIdAsync(tenantId, modelId);
+        var modelMetadata = await MlModelMetaRepository.MetadataByTenantAndIdAsync(tenantId, modelId);
 
         if (modelMetadata == null)
         {
@@ -169,7 +172,7 @@ public class AutoMlExecutor : IModelExecutor
     
     public async Task<object> PredictAsync(Guid tenantId, string identifier, IDictionary<string, object> query)
     {
-        var modelMetadata = await MetadataAdapter.MlModelMetadataByTenantAndIdentifierAsync(tenantId, identifier);
+        var modelMetadata = await MlModelMetaRepository.MetadataByTenantAndIdentifierAsync(tenantId, identifier);
 
         if (modelMetadata == null)
         {
@@ -189,7 +192,7 @@ public class AutoMlExecutor : IModelExecutor
         return Predict(prediction, query);
     }
     
-    private async Task<AutoMlPredictionContext> CreatePredictionEngine(Guid tenantId, ModelMetadata modelMetadata)
+    private async Task<AutoMlPredictionContext> CreatePredictionEngine(Guid tenantId, MlModel modelMetadata)
     {
         var modelOptions = JsonConvert.DeserializeObject<ModelOptions>(modelMetadata.Options ?? "{}");
         
