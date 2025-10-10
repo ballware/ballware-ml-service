@@ -32,7 +32,7 @@ jobs:
           dotnet tool update Swashbuckle.AspNetCore.Cli --version 7.2.0
           dotnet tool update Nswag.ConsoleCore
       - name: Fetch GitVersion
-	id: gitversion
+	    id: gitversion
         uses: gittools/actions/gitversion/execute@b82e662a7199df56ac962118e506d9efb9830f82 # v4.1.0
       - name: Restore dependencies
         env:
