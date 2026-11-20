@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
 using Ballware.Ml.Data;
 using Ballware.Ml.Data.Public;
 using Ballware.Ml.Data.Repository;
+using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;

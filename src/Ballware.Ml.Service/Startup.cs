@@ -19,6 +19,9 @@ using Ballware.Shared.Api;
 using Ballware.Shared.Api.Endpoints;
 using Ballware.Shared.Authorization.Jint;
 using Ballware.Storage.Service.Client;
+using Duende.AccessTokenManagement;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -30,10 +33,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Quartz;
 using CorsOptions = Ballware.Ml.Service.Configuration.CorsOptions;
 using SwaggerOptions = Ballware.Ml.Service.Configuration.SwaggerOptions;
+using Scope = Duende.AccessTokenManagement.Scope;
 using Serilog;
 
 namespace Ballware.Ml.Service;
@@ -184,30 +188,30 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         Services.AddClientCredentialsTokenManagement()
             .AddClient("meta", client =>
             {
-                client.TokenEndpoint = metaClientOptions.TokenEndpoint;
+                client.TokenEndpoint = new Uri(metaClientOptions.TokenEndpoint);
 
-                client.ClientId = metaClientOptions.ClientId;
-                client.ClientSecret = metaClientOptions.ClientSecret;
+                client.ClientId = ClientId.Parse(metaClientOptions.ClientId);
+                client.ClientSecret = ClientSecret.Parse(metaClientOptions.ClientSecret);
 
-                client.Scope = metaClientOptions.Scopes;
+                client.Scope = Scope.Parse(metaClientOptions.Scopes);
             })
             .AddClient("storage", client =>
             {
-                client.TokenEndpoint = storageClientOptions.TokenEndpoint;
+                client.TokenEndpoint = new Uri(storageClientOptions.TokenEndpoint);
 
-                client.ClientId = storageClientOptions.ClientId;
-                client.ClientSecret = storageClientOptions.ClientSecret;
+                client.ClientId = ClientId.Parse(storageClientOptions.ClientId);
+                client.ClientSecret = ClientSecret.Parse(storageClientOptions.ClientSecret);
 
-                client.Scope = storageClientOptions.Scopes;
+                client.Scope = Scope.Parse(storageClientOptions.Scopes);
             })
             .AddClient("generic", client =>
             {
-                client.TokenEndpoint = genericClientOptions.TokenEndpoint;
+                client.TokenEndpoint = new Uri(genericClientOptions.TokenEndpoint);
 
-                client.ClientId = genericClientOptions.ClientId;
-                client.ClientSecret = genericClientOptions.ClientSecret;
+                client.ClientId = ClientId.Parse(genericClientOptions.ClientId);
+                client.ClientSecret = ClientSecret.Parse(genericClientOptions.ClientSecret);
 
-                client.Scope = genericClientOptions.Scopes;
+                client.Scope = Scope.Parse(genericClientOptions.Scopes);
             });
         
         Services.AddHttpClient<MetaServiceClient>(client =>
@@ -220,7 +224,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             })
 #endif                  
-            .AddClientCredentialsTokenHandler("meta");
+            .AddClientCredentialsTokenHandler(ClientCredentialsClientName.Parse("meta"));
 
         Services.AddHttpClient<StorageServiceClient>(client =>
             {
@@ -232,7 +236,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             })
 #endif            
-            .AddClientCredentialsTokenHandler("storage");
+            .AddClientCredentialsTokenHandler(ClientCredentialsClientName.Parse("storage"));
         
         Services.AddHttpClient<GenericServiceClient>(client =>
             {
@@ -244,13 +248,15 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             })
 #endif                        
-            .AddClientCredentialsTokenHandler("generic");
+            .AddClientCredentialsTokenHandler(ClientCredentialsClientName.Parse("generic"));
         
-        Services.AddAutoMapper(config =>
-        {
-            config.AddBallwareMlStorageMappings();
-            config.AddProfile<MetaServiceMlMetadataProfile>();
-        });
+        var mapsterConfig = new TypeAdapterConfig()
+            .AddBallwareMlStorageMappings();
+
+        new MetaServiceMlMetadataProfile().Register(mapsterConfig);
+
+        Services.AddSingleton(mapsterConfig);
+        Services.AddScoped<IMapper, ServiceMapper>();
         
         Services.AddBallwareSharedJintRightsChecker();
         Services.AddBallwareSharedApiDependencies();
@@ -282,13 +288,13 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
         {
             Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("ml", new Microsoft.OpenApi.Models.OpenApiInfo
+                c.SwaggerDoc("ml", new OpenApiInfo
                 {
                     Title = "ballware Ml user API",
                     Version = "v1"
                 });
                 
-                c.SwaggerDoc("service", new Microsoft.OpenApi.Models.OpenApiInfo
+                c.SwaggerDoc("service", new OpenApiInfo
                 {
                     Title = "ballware Ml service API",
                     Version = "v1"
@@ -298,17 +304,15 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 
                 c.AddSecurityDefinition("oidc", new OpenApiSecurityScheme
                 {
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.OpenIdConnect,
+                    Type = SecuritySchemeType.OpenIdConnect,
                     OpenIdConnectUrl = new Uri(authorizationOptions.Authority + "/.well-known/openid-configuration")
                 });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                c.AddSecurityRequirement((document) => new OpenApiSecurityRequirement
                 {
                     {
-                        new OpenApiSecurityScheme {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oidc" }
-                        },
-                        swaggerOptions.RequiredScopes.Split(" ")
+                        new OpenApiSecuritySchemeReference("oidc", document),
+                        swaggerOptions.RequiredScopes.Split(" ").ToList()
                     }
                 });
             });
