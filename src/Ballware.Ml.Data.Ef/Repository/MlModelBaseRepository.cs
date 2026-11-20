@@ -1,9 +1,9 @@
-using AutoMapper;
 using Ballware.Ml.Data.Common;
 using Ballware.Ml.Data.Repository;
 using Ballware.Ml.Data.SelectLists;
 using Ballware.Shared.Data.Ef.Repository;
 using Ballware.Shared.Data.Repository;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ballware.Ml.Data.Ef.Repository;

@@ -1,6 +1,6 @@
-using AutoMapper;
 using Ballware.Ml.Data.Ef.Repository;
 using Ballware.Shared.Data.Repository;
+using MapsterMapper;
 
 namespace Ballware.Ml.Data.Ef.SqlServer.Repository;
 

@@ -1,6 +1,8 @@
 using Ballware.Ml.Data.Ef.Configuration;
 using Ballware.Ml.Data.Ef.SqlServer;
 using Ballware.Ml.Data.Ef.SqlServer.Tests.Utils;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,10 +25,12 @@ public class EfMigrationsTest : DatabaseBackedBaseTest
         });
 
         PreparedBuilder.Services.AddBallwareMlStorageForSqlServer(storageOptions, connectionString);
-        PreparedBuilder.Services.AddAutoMapper(config =>
-        {
-            config.AddBallwareMlStorageMappings();
-        });
+
+        var mapsterConfig = new TypeAdapterConfig()
+            .AddBallwareMlStorageMappings();
+
+        PreparedBuilder.Services.AddSingleton(mapsterConfig);
+        PreparedBuilder.Services.AddScoped<IMapper, ServiceMapper>();
 
         var app = PreparedBuilder.Build();
 

@@ -14,7 +14,7 @@ This repository contains the Ballware ML Service – the component that defines,
 For a complete, multi-service installation (Keycloak, Meta, Storage, Generic, etc.), please use the umbrella repository: https://github.com/ballware/ballware-docker-compose. This README focuses solely on the specifics of the ML Service.
 
 
-- Tech stack: .NET 8, ASP.NET Core (minimal API), EF Core (PostgreSQL or SQL Server), ML.NET AutoML, Serilog, Quartz, AutoMapper, Jint (rights expressions)
+- Tech stack: .NET 10, ASP.NET Core (minimal API), EF Core (PostgreSQL or SQL Server), ML.NET AutoML, Serilog, Quartz, Mapster, Jint (rights expressions)
 - AuthN/Z: OAuth2/OIDC with JWT Bearer, scope-based authorization (mlApi, serviceApi)
 - Model engine: Microsoft.ML.AutoML regression experiment (featurizer + auto-selected regression trainer, R² metric)
 - Caching: in-memory, tenant-aware model cache
