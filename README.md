@@ -84,6 +84,21 @@ Training flow (`POST /ml/mlmodel/train` with `id` list):
 Prediction flow: metadata is resolved for the tenant, the model artifact is fetched from the Storage Service and cached per tenant/identifier, and the JSON request body is mapped to the compiled input type; the prediction is returned as JSON.
 
 
+## Documentation
+
+Detailed API and service documentation lives in [`docs/`](docs/README.md), anchored on the committed
+OpenAPI snapshots in [`docs/openapi/`](docs/openapi/README.md):
+
+- [`docs/api/`](docs/api/README.md) – operation tables and payloads for the `ml` (15 paths) and `service`
+  (3 paths) documents, schemas, copy-pasteable request sequences
+- [`docs/concepts/`](docs/concepts/architecture.md) – architecture, tenancy/authorization, model
+  lifecycle, integration dependencies
+- [`docs/best-practices/`](docs/best-practices/model-definition.md) – model definition templates and
+  feature/query design
+- [`docs/openapi/fetch-spec.sh`](docs/openapi/fetch-spec.sh) – regenerate the snapshots after endpoint
+  changes
+
+
 ## Quick start (local development)
 
 Prerequisites:

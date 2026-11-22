@@ -361,7 +361,7 @@ public class Startup(IWebHostEnvironment environment, ConfigurationManager confi
 
         app.MapMlModelUserApi("/ml/mlmodel");
         app.MapMlModelServiceApi("/ml/mlmodel");
-        app.MapTenantableEditingApi<Data.Public.MlModel>("/ml/mlmodel", "meta", "mlmodel", "MlModel", "MlModel", "mlApi", "mlmodel");
+        app.MapTenantableEditingApi<Data.Public.MlModel>("/ml/mlmodel", "meta", "mlmodel", "MlModel", "MlModel", "mlApi", "ml");
         
         app.MapMlTenantServiceApi("/ml/tenant");
         
