@@ -1,16 +1,16 @@
-using AutoMapper;
+using Mapster;
 
 namespace Ballware.Ml.Data.Ef.Mapping;
 
-class StorageMappingProfile : Profile
+class StorageMappingProfile : IRegister
 {
-    public StorageMappingProfile()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<Public.MlModel, Persistables.MlModel>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Id));
+        config.NewConfig<Public.MlModel, Persistables.MlModel>()
+            .Ignore(dest => dest.Id)
+            .Map(dest => dest.Uuid, src => src.Id);
 
-        CreateMap<Persistables.MlModel, Public.MlModel>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Uuid));
+        config.NewConfig<Persistables.MlModel, Public.MlModel>()
+            .Map(dest => dest.Id, src => src.Uuid);
     }
 }

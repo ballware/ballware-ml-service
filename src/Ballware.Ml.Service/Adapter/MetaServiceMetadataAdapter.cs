@@ -1,8 +1,8 @@
-using AutoMapper;
 using Ballware.Meta.Service.Client;
 using Ballware.Ml.Metadata;
 using Ballware.Shared.Api;
 using Ballware.Shared.Authorization;
+using MapsterMapper;
 
 namespace Ballware.Ml.Service.Adapter;
 
